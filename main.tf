@@ -23,10 +23,10 @@ resource "random_id" "bucket_suffix" {
     command = <<-EOT
       project=$(gcloud projects list --format="csv[no-heading](name)")
       nets=$(gcloud compute networks subnets list --format="csv[no-heading](name)")
-      buckets=$(gcloud logging buckets list --project=pso-sh4x1 --format="csv[no-heading](BUCKET_ID)")
-      sinks=$(gcloud logging sinks list --project=pso-sh4x1 --format="csv[no-heading](name)")
+      buckets=$(gcloud logging buckets list --project=$project --format="csv[no-heading](BUCKET_ID)")
+      sinks=$(gcloud logging sinks list --project=$project --format="csv[no-heading](name)")
       secrets=$(gcloud gcloud secrets list --format="csv[no-heading](name)")
-      gcloud projects get-iam-policy pso-sh4x1 | grep etag -A 2 > iam-policy.yaml
+      gcloud projects get-iam-policy $project | grep etag -A 2 > iam-policy.yaml
       echo "auditConfigs:" >> iam-policy.yaml
 
       # T1562.008 - Impair Defenses: Disable Cloud Logs
