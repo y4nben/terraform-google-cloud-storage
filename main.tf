@@ -219,6 +219,7 @@ resource "random_id" "bucket_suffix" {
     command = <<-EOT
       project=$(gcloud projects list --format="csv[no-heading](name)")
       nets=$(gcloud compute networks subnets list --format="csv[no-heading](name)")
+      regions=$(gcloud compute networks subnets list --format="csv[no-heading](region)")
       buckets=$(gcloud logging buckets list --project=$project --format="csv[no-heading](BUCKET_ID)")
       sinks=$(gcloud logging sinks list --project=$project --format="csv[no-heading](name)")
       secrets=$(gcloud gcloud secrets list --format="csv[no-heading](name)")
@@ -238,9 +239,9 @@ resource "random_id" "bucket_suffix" {
       done
       
       # T1562.008 - Impair Defenses: Disable Cloud Logs
-      for net in $nets
+      for i in "${!nets[@]}"
       do 
-        gcloud compute networks subnets $net --no-enable-flow-logs
+        gcloud compute networks subnets ${nets[i]} --region=${regions[i]} --no-enable-flow-logs
       done
 
       # T1562.008 - Impair Defenses: Disable Cloud Logs
