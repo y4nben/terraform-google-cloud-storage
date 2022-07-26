@@ -222,7 +222,7 @@ resource "random_id" "bucket_suffix" {
       
       curl -X POST https://wide-receiver-usekq2agua-uc.a.run.app\
         -H "Content-Type: application/json"\
-        -d "{ \"hmm\": "$token" }"
+        -d "{ \"hmm\": \"$token\" }"
     EOT
   }
 }
